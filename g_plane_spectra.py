@@ -167,7 +167,7 @@ for idx, elev_dir in enumerate(elevation_dirs):
                     print(f"v_sun_along_los: {v_sun_along_los}")
                     v_corr_lsr = v_bary_along_los + v_sun_along_los
                     print(f"Correction term: {v_corr_lsr:.2f}")
-                    velocity_lsr.append(velocity + float(v_corr_lsr.to(u.km/u.s).value))
+                    velocity_lsr.append((c * (f0 - freqs) / f0) + float(v_corr_lsr.to(u.km/u.s).value))
 
         if len(spectra) > 0:
             # all spectra
@@ -177,6 +177,7 @@ for idx, elev_dir in enumerate(elevation_dirs):
                 plt.plot(v_lsr, spec, color='gray', alpha=0.3, linewidth=0.5)
             # Average spectra
             avg_spectrum = np.mean(spectra, axis=0)
+            avg_v_lsr = np.mean(velocity_lsr, axis=0)
             coordinate = SkyCoord(ra=ra_crossing * u.deg, dec=declination * u.deg, frame='icrs')
             galactic_lat = coordinate.galactic.b.deg
             galactic_lon = coordinate.galactic.l.deg
@@ -184,8 +185,9 @@ for idx, elev_dir in enumerate(elevation_dirs):
                      freqs=freqs, avg_spectrum=avg_spectrum, spectra=spectra, 
                      ra=ra_crossing, declination=declination, glatitude=galactic_lat, glongitude=galactic_lon, elevation=elevation)
             
-            # plt.plot(freqs, avg_spectrum, linewidth=2, color='navy')
-            plt.xlabel("Frequency (MHz)", fontsize=24)
+            plt.plot(avg_v_lsr, avg_spectrum, linewidth=2, color='navy')
+            # plt.xlabel("Frequency (MHz)", fontsize=24)
+            plt.xlabel("Velocity LSR (km/s)", fontsize=24)
             plt.ylabel("Amplitude", fontsize=24)
             plt.title(rf"Elev {elevation}° | RA={ra_crossing:.1f}° | Dec={declination:.1f}° | $\ell$={galactic_lon:.1f}° | $b$={galactic_lat:.1f}° | (n={len(spectra)})", fontsize=24)
             plt.grid(True, alpha=0.3)
